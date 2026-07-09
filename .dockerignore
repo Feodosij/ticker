@@ -1,0 +1,45 @@
+# Keep the build context small and avoid leaking local state into the image.
+
+# Version control / CI
+.git
+.github
+.gitignore
+
+# Secrets — never bake into the image (env is passed at runtime via --env-file)
+.env
+
+# Docs & tooling
+planning
+scripts
+test
+README.md
+LICENSE
+CLAUDE.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+.claude
+
+# Runtime data (the DB is volume-mounted, never copied in)
+db/*.db
+db/*.sqlite3
+
+# Frontend build artifacts & deps (rebuilt inside the image)
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/coverage
+frontend/playwright-report
+frontend/test-results
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Backend virtualenv & caches (deps come from the lockfile)
+backend/.venv
+backend/**/__pycache__
+backend/**/*.pyc
+backend/.coverage
+backend/.pytest_cache
+
+# macOS
+.DS_Store

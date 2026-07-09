@@ -1,0 +1,21 @@
+# Convenience wrapper for local development / demos.
+# Production is a single `docker run` (see scripts/ and PLAN.md §11); this file
+# just bundles the build, port mapping, env file, and data volume in one command:
+#
+#   docker compose up --build
+#
+services:
+  finally:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: finally:latest
+    container_name: finally
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # SQLite database persists on the host across container restarts.
+      - ./db:/app/db
+    restart: unless-stopped

@@ -1,0 +1,42 @@
+# E2E test topology (PLAN.md §12): the production app container plus a separate
+# Playwright container, so browser dependencies stay out of the production image.
+#
+#   docker compose -f test/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from playwright
+#
+# The app runs with LLM_MOCK=true and no MASSIVE_API_KEY, so the deterministic
+# mock LLM and the built-in market simulator are used regardless of repo .env.
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: finally:latest
+    environment:
+      LLM_MOCK: "true"
+      MASSIVE_API_KEY: ""
+      OPENROUTER_API_KEY: "test-dummy-key"
+    expose:
+      - "8000"
+    networks:
+      default:
+        aliases:
+          # Dotted host: Chromium force-upgrades single-label hosts ("app") to
+          # HTTPS with no fallback (ERR_SSL_PROTOCOL_ERROR), so tests target this.
+          - app.finally.test
+    # No volume mount: each run starts from a freshly-seeded database so the
+    # "fresh start" scenario ($10k cash, default watchlist) is deterministic.
+
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    depends_on:
+      - app
+    environment:
+      BASE_URL: "http://app.finally.test:8000"
+      CI: "true"
+      # Browsers are baked into the image; don't re-download them on npm install.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    working_dir: /work
+    volumes:
+      - .:/work
+    command: >
+      sh -c "npm install --no-audit --no-fund && npx playwright test"
