@@ -133,7 +133,7 @@ class PriceCache:
     def __init__(self) -> None:
         self._prices: dict[str, PriceUpdate] = {}
 
-    def set(self, update: PriceUpdate) -> None:
+    def set_price(self, update: PriceUpdate) -> None:
         self._prices[update.ticker] = update
 
     def get(self, ticker: str) -> PriceUpdate | None:
@@ -145,6 +145,8 @@ class PriceCache:
     def all_tickers(self) -> set[str]:
         return set(self._prices)
 ```
+
+The write method is named `set_price`, not `set` — a method literally named `set` would bind that name in the class body's namespace, shadowing the builtin `set` before it's used in `get_many`'s `tickers: set[str]` annotation a few lines down, which raises `TypeError: 'function' object is not subscriptable` at class-definition time (annotations are evaluated eagerly here, since this module doesn't use `from __future__ import annotations`).
 
 `PriceCache` is instantiated once in `app.state` at startup and injected into both the provider and the SSE route. Removing a ticker from the watchlist does **not** delete it from the cache — the row simply stops being requested by `get_many()` once the watchlist route updates the tracked ticker set. This avoids a race where a removal and an in-flight provider tick could re-add a stale entry.
 
@@ -255,7 +257,7 @@ class SimulatorProvider(MarketDataProvider):
             for ticker, state in self._state.items():
                 new_price = gbm_step(state.price, state.params.mu, state.params.sigma, self._dt_years, self._rng)
                 new_price = round(new_price, 2)
-                self._cache.set(PriceUpdate(
+                self._cache.set_price(PriceUpdate(
                     ticker=ticker,
                     price=new_price,
                     previous_price=state.price,
@@ -393,7 +395,7 @@ class MassiveProvider(MarketDataProvider):
         existing = self._cache.get(ticker)
         previous_price = existing.price if existing else price
 
-        self._cache.set(PriceUpdate(
+        self._cache.set_price(PriceUpdate(
             ticker=ticker,
             price=round(price, 2),
             previous_price=round(previous_price, 2),
