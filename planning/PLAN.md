@@ -136,6 +136,7 @@ LLM_MOCK=false
 
 - If `MASSIVE_API_KEY` is set and non-empty → backend uses Massive REST API for market data
 - If `MASSIVE_API_KEY` is absent or empty → backend uses the built-in market simulator
+- `MASSIVE_API_KEY` is read once at process startup; changing it requires a restart (no hot-reload)
 - If `LLM_MOCK=true` → backend returns deterministic mock LLM responses (for E2E tests)
 - The backend reads `.env` from the project root (mounted into the container or read via docker `--env-file`)
 
@@ -149,19 +150,21 @@ Both the simulator and the Massive client implement the same abstract interface.
 
 ### Simulator (Default)
 
+v1 baseline:
 - Generates prices using geometric Brownian motion (GBM) with configurable drift and volatility per ticker
 - Updates at ~500ms intervals
-- Correlated moves across tickers (e.g., tech stocks move together)
-- Occasional random "events" — sudden 2-5% moves on a ticker for drama
 - Starts from realistic seed prices (e.g., AAPL ~$190, GOOGL ~$175, etc.)
 - Runs as an in-process background task — no external dependencies
+
+Optional stretch enhancement (skip for v1 if time-constrained):
+- Correlated moves across tickers (e.g., tech stocks move together)
+- Occasional random "events" — sudden 2-5% moves on a ticker for drama
 
 ### Massive API (Optional)
 
 - REST API polling (not WebSocket) — simpler, works on all tiers
 - Polls for the union of all watched tickers on a configurable interval
-- Free tier (5 calls/min): poll every 15 seconds
-- Paid tiers: poll every 2-15 seconds depending on tier
+- Poll interval depends on API tier — consult Massive's official API documentation for current rate limits and choose an interval that stays within them
 - Parses REST response into the same format as the simulator
 
 ### Shared Price Cache
@@ -225,7 +228,7 @@ All tables include a `user_id` column defaulting to `"default"`. This is hardcod
 - `price` REAL
 - `executed_at` TEXT (ISO timestamp)
 
-**portfolio_snapshots** — Portfolio value over time (for P&L chart). Recorded every 30 seconds by a background task, and immediately after each trade execution.
+**portfolio_snapshots** — Portfolio value over time (for P&L chart). Recorded every 30 seconds by a background task, and immediately after each trade execution. No retention or pruning is needed — at this project's single-user, course-project scale, row growth is negligible and SQLite handles it without issue.
 - `id` TEXT PRIMARY KEY (UUID)
 - `user_id` TEXT (default: `"default"`)
 - `total_value` REAL
@@ -275,7 +278,7 @@ All tables include a `user_id` column defaulting to `"default"`. This is hardcod
 ### System
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/health` | Health check (for Docker/deployment) |
+| GET | `/api/health` | Liveness check only — returns 200 if the process is up; does not verify DB or market data task health |
 
 ---
 
@@ -309,14 +312,15 @@ The LLM is instructed to respond with JSON matching this schema:
     {"ticker": "AAPL", "side": "buy", "quantity": 10}
   ],
   "watchlist_changes": [
-    {"ticker": "PYPL", "action": "add"}
+    {"ticker": "PYPL", "action": "add"},
+    {"ticker": "NFLX", "action": "remove"}
   ]
 }
 ```
 
 - `message` (required): The conversational text shown to the user
-- `trades` (optional): Array of trades to auto-execute. Each trade goes through the same validation as manual trades (sufficient cash for buys, sufficient shares for sells)
-- `watchlist_changes` (optional): Array of watchlist modifications
+- `trades` (optional): Array of trades to auto-execute. Each trade goes through the same validation as manual trades (sufficient cash for buys, sufficient shares for sells). `quantity` is a share count (whole or fractional) — dollar-denominated trades (e.g., "buy $500 of AAPL") are out of scope for v1: the LLM must not convert dollars to shares itself; instead it should ask the user to specify a share quantity.
+- `watchlist_changes` (optional): Array of watchlist modifications. `action` is either `"add"` or `"remove"`, mirroring the `POST`/`DELETE` watchlist endpoints
 
 ### Auto-Execution
 
@@ -325,7 +329,7 @@ Trades specified by the LLM execute automatically — no confirmation dialog. Th
 - It creates an impressive, fluid demo experience
 - It demonstrates agentic AI capabilities — the core theme of the course
 
-If a trade fails validation (e.g., insufficient cash), the error is included in the chat response so the LLM can inform the user.
+Trades in the `trades` array are validated and executed independently, in array order. If one fails validation (e.g., insufficient cash), its error is included in the chat response so the LLM can inform the user, but it does not roll back or block the execution of other trades in the same array.
 
 ### System Prompt Guidance
 
@@ -333,13 +337,14 @@ The LLM should be prompted as "FinAlly, an AI trading assistant" with instructio
 - Analyze portfolio composition, risk concentration, and P&L
 - Suggest trades with reasoning
 - Execute trades when the user asks or agrees
+- Ask for a share quantity (rather than converting dollars to shares itself) if the user requests a dollar-denominated trade
 - Manage the watchlist proactively
 - Be concise and data-driven in responses
 - Always respond with valid structured JSON
 
 ### LLM Mock Mode
 
-When `LLM_MOCK=true`, the backend returns deterministic mock responses instead of calling OpenRouter. This enables:
+When `LLM_MOCK=true`, the backend returns deterministic mock responses instead of calling OpenRouter, keyed off simple keyword matching in the user's message (e.g., a message containing "buy" triggers a canned buy-trade response; anything else gets a fixed canned message with no actions). This gives Playwright fixtures and the backend mock a shared, predictable contract and enables:
 - Fast, free, reproducible E2E tests
 - Development without an API key
 - CI/CD pipelines
@@ -352,7 +357,7 @@ When `LLM_MOCK=true`, the backend returns deterministic mock responses instead o
 
 The frontend is a single-page application with a dense, terminal-inspired layout. The specific component architecture and layout system is up to the Frontend Engineer, but the UI should include these elements:
 
-- **Watchlist panel** — grid/table of watched tickers with: ticker symbol, current price (flashing green/red on change), daily change %, and a sparkline mini-chart (accumulated from SSE since page load)
+- **Watchlist panel** — grid/table of watched tickers with: ticker symbol, current price (flashing green/red on change), daily change %, and a sparkline mini-chart (accumulated from SSE since page load). This is intentionally frontend-only, in-memory state — no server-side buffer or persistence; a page refresh resets sparklines and they refill progressively over the new session.
 - **Main chart area** — larger chart for the currently selected ticker, with at minimum price over time. Clicking a ticker in the watchlist selects it here.
 - **Portfolio heatmap** — treemap visualization where each rectangle is a position, sized by portfolio weight, colored by P&L (green = profit, red = loss)
 - **P&L chart** — line chart showing total portfolio value over time, using data from `portfolio_snapshots`
