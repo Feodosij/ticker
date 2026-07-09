@@ -3,7 +3,7 @@ import contextlib
 import math
 import random
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .base import MarketDataProvider, PriceUpdate
 from .cache import PriceCache
@@ -103,7 +103,7 @@ class SimulatorProvider(MarketDataProvider):
             await asyncio.sleep(self._tick_interval_seconds)
 
     def _tick(self) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for ticker, state in self._state.items():
             new_price = gbm_step(
                 state.price, state.params.mu, state.params.sigma, self._dt_years, self._rng

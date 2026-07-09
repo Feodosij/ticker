@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.market_data.base import PriceUpdate
 from app.market_data.cache import PriceCache
@@ -10,7 +10,7 @@ def make_update(ticker, price=100.0):
         price=price,
         previous_price=price,
         open_price=price,
-        timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        timestamp=datetime(2024, 1, 1, tzinfo=UTC),
     )
 
 

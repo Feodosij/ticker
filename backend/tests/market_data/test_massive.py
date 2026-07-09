@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 import pytest
@@ -48,7 +48,7 @@ def test_apply_snapshot_prefers_last_trade_price():
             "day": {"o": 189.10, "c": 190.00},
             "prevDay": {"c": 189.00},
         },
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.price == pytest.approx(190.42)
@@ -60,7 +60,7 @@ def test_apply_snapshot_falls_back_to_day_close_when_no_last_trade():
     provider = make_provider(cache)
     provider._apply_snapshot(
         {"ticker": "AAPL", "day": {"o": 100.0, "c": 105.0}},
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.price == pytest.approx(105.0)
@@ -72,7 +72,7 @@ def test_apply_snapshot_falls_back_to_prev_day_close_when_no_current_data():
     provider = make_provider(cache)
     provider._apply_snapshot(
         {"ticker": "AAPL", "prevDay": {"c": 95.0}},
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.price == pytest.approx(95.0)
@@ -84,7 +84,7 @@ def test_apply_snapshot_open_price_falls_back_to_prev_close_when_day_open_missin
     provider = make_provider(cache)
     provider._apply_snapshot(
         {"ticker": "AAPL", "lastTrade": {"p": 101.0}, "prevDay": {"c": 99.0}},
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.open_price == pytest.approx(99.0)
@@ -93,7 +93,7 @@ def test_apply_snapshot_open_price_falls_back_to_prev_close_when_day_open_missin
 def test_apply_snapshot_missing_price_fields_is_a_noop():
     cache = PriceCache()
     provider = make_provider(cache)
-    provider._apply_snapshot({"ticker": "AAPL"}, datetime.now(timezone.utc))
+    provider._apply_snapshot({"ticker": "AAPL"}, datetime.now(UTC))
     assert cache.get("AAPL") is None
 
 
@@ -105,13 +105,13 @@ def test_apply_snapshot_uses_prior_cached_price_as_previous_price():
             price=190.00,
             previous_price=189.00,
             open_price=189.00,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
     )
     provider = make_provider(cache)
     provider._apply_snapshot(
         {"ticker": "AAPL", "lastTrade": {"p": 191.00}, "day": {"o": 189.00}},
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.price == pytest.approx(191.00)
@@ -123,7 +123,7 @@ def test_apply_snapshot_first_sighting_uses_price_as_previous_price():
     provider = make_provider(cache)
     provider._apply_snapshot(
         {"ticker": "AAPL", "lastTrade": {"p": 190.42}, "day": {"o": 189.10}},
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
     update = cache.get("AAPL")
     assert update.previous_price == pytest.approx(190.42)
@@ -158,7 +158,7 @@ async def test_poll_once_auth_failure_keeps_stale_cache():
         price=100.0,
         previous_price=100.0,
         open_price=100.0,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
     cache.set_price(stale)
     provider = make_provider(cache, handler=snapshot_handler([], status_code=401))

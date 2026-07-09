@@ -1,5 +1,5 @@
 from dataclasses import FrozenInstanceError
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -12,7 +12,7 @@ def make_update(**overrides):
         price=100.0,
         previous_price=100.0,
         open_price=100.0,
-        timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        timestamp=datetime(2024, 1, 1, tzinfo=UTC),
     )
     defaults.update(overrides)
     return PriceUpdate(**defaults)

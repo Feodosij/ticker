@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -73,7 +73,7 @@ class MassiveProvider(MarketDataProvider):
             logger.warning("Massive API request failed: %s — keeping stale cache", exc)
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for entry in data.get("tickers", []):
             self._apply_snapshot(entry, now)
 
