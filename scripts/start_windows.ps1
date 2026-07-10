@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Build (if needed) and run the FinAlly container on Windows.
+    Build (if needed) and run the Ticker container on Windows.
 .DESCRIPTION
     Idempotent: safe to re-run. Use -Build to force a rebuild.
 .EXAMPLE
@@ -13,8 +13,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$ImageName     = "finally:latest"
-$ContainerName = "finally"
+$ImageName     = "ticker:latest"
+$ContainerName = "ticker"
 $Port          = 8000
 $Url           = "http://localhost:$Port"
 
@@ -48,7 +48,7 @@ if ($Build -or (-not $ImageExists)) {
 $Running = docker ps --format "{{.Names}}" | Select-String -SimpleMatch -Pattern $ContainerName
 if ($Running) {
     Write-Host "Container '$ContainerName' is already running."
-    Write-Host "FinAlly is available at $Url"
+    Write-Host "Ticker is available at $Url"
     exit 0
 }
 
@@ -74,5 +74,5 @@ Write-Host "Starting container '$ContainerName'..."
 docker run @RunArgs *> $null
 if ($LASTEXITCODE -ne 0) { Write-Error "docker run failed."; exit 1 }
 
-Write-Host "FinAlly is running at $Url"
+Write-Host "Ticker is running at $Url"
 Start-Process $Url

@@ -9,7 +9,7 @@ test('AI chat (mocked): buy message executes a trade shown inline and in portfol
 
   const cashBefore = await readMoney(headerMetric(page, 'Cash'));
 
-  const composer = page.getByLabel('Message FinAlly');
+  const composer = page.getByLabel('Message Ticker');
   await composer.fill('please buy something for me');
   await composer.press('Enter');
 

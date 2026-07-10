@@ -1,4 +1,4 @@
-"""LLM integration for the FinAlly chat assistant.
+"""LLM integration for the Ticker chat assistant.
 
 Wraps the LiteLLM -> OpenRouter call with a structured-output schema, builds the
 system/context prompt from the user's live portfolio and watchlist, and provides
@@ -26,11 +26,11 @@ OPENROUTER_MODEL = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
 OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
 
 MOCK_DEFAULT_MESSAGE = (
-    "I'm FinAlly, your AI trading assistant. Ask me about your portfolio or "
+    "I'm Ticker, your AI trading assistant. Ask me about your portfolio or "
     "tell me what to trade."
 )
 
-SYSTEM_PROMPT = """You are FinAlly, an AI trading assistant embedded in a \
+SYSTEM_PROMPT = """You are Ticker, an AI trading assistant embedded in a \
 simulated trading workstation. You help the user manage a virtual portfolio.
 
 Your responsibilities:

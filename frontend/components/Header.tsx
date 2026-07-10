@@ -20,8 +20,7 @@ export default function Header({ onToggleChat }: { onToggleChat: () => void }) {
     <header className="flex items-center justify-between gap-4 border-b border-border bg-bg-deep px-4 py-2.5">
       <div className="flex items-center gap-3">
         <div className="flex items-baseline gap-1.5">
-          <span className="font-mono text-lg font-bold tracking-tight text-accent">Fin</span>
-          <span className="font-mono text-lg font-bold tracking-tight text-primary">Ally</span>
+          <span className="font-mono text-lg font-bold tracking-tight text-accent">Ticker</span>
         </div>
         <span className="hidden text-[10px] uppercase tracking-[0.2em] text-faint sm:inline">
           Trading Workstation

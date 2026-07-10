@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
         await provider.stop()
 
 
-app = FastAPI(title="FinAlly", lifespan=lifespan)
+app = FastAPI(title="Ticker", lifespan=lifespan)
 
 app.include_router(health.router)
 app.include_router(watchlist.router)
