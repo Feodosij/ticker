@@ -5,12 +5,12 @@
 #   docker compose up --build
 #
 services:
-  finally:
+  ticker:
     build:
       context: .
       dockerfile: Dockerfile
-    image: finally:latest
-    container_name: finally
+    image: ticker:latest
+    container_name: ticker
     ports:
       - "8000:8000"
     env_file:

@@ -1,8 +1,8 @@
 {
-  "name": "finally-e2e",
+  "name": "ticker-e2e",
   "private": true,
   "version": "0.1.0",
-  "description": "Playwright end-to-end tests for the FinAlly trading workstation.",
+  "description": "Playwright end-to-end tests for the Ticker trading workstation.",
   "scripts": {
     "test": "playwright test"
   },

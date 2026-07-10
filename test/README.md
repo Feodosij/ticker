@@ -1,4 +1,4 @@
-# FinAlly E2E Tests
+# Ticker E2E Tests
 
 Playwright end-to-end tests that exercise the full stack (FastAPI + static
 Next.js frontend + market simulator + mock LLM) against the real production

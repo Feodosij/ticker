@@ -37,7 +37,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-accent" />
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-200">
-              FinAlly Copilot
+              Ticker Copilot
             </h2>
           </div>
           <button
@@ -52,7 +52,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
           {chatMessages.length === 0 && (
             <div className="mt-6 space-y-2 text-center">
-              <p className="text-sm text-muted">Ask FinAlly to analyze or trade.</p>
+              <p className="text-sm text-muted">Ask Ticker to analyze or trade.</p>
               <p className="text-xs text-faint">
                 &ldquo;How is my portfolio concentrated?&rdquo;
                 <br />
@@ -68,14 +68,14 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         <form onSubmit={submit} className="border-t border-border p-2.5">
           <div className="flex items-end gap-2">
             <textarea
-              aria-label="Message FinAlly"
+              aria-label="Message Ticker"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) submit(e);
               }}
               rows={1}
-              placeholder="Message FinAlly…"
+              placeholder="Message Ticker…"
               className="max-h-28 min-h-[38px] flex-1 resize-none rounded border border-border bg-bg-base px-2.5 py-2 text-sm text-slate-100 placeholder:text-faint focus:border-primary focus:outline-none"
             />
             <button

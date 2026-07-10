@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Build (if needed) and run the FinAlly container on macOS/Linux.
+# Build (if needed) and run the Ticker container on macOS/Linux.
 # Idempotent: safe to re-run. Pass --build to force a rebuild.
 #
 #   ./scripts/start_mac.sh            # build if the image is missing, then run
 #   ./scripts/start_mac.sh --build    # always rebuild the image first
 set -euo pipefail
 
-IMAGE_NAME="finally:latest"
-CONTAINER_NAME="finally"
+IMAGE_NAME="ticker:latest"
+CONTAINER_NAME="ticker"
 PORT=8000
 URL="http://localhost:${PORT}"
 
@@ -45,7 +45,7 @@ fi
 # If a container with our name is already running, we're done.
 if docker ps --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
   echo "Container '${CONTAINER_NAME}' is already running."
-  echo "FinAlly is available at ${URL}"
+  echo "Ticker is available at ${URL}"
   exit 0
 fi
 
@@ -68,7 +68,7 @@ fi
 echo "Starting container '${CONTAINER_NAME}'..."
 docker run "${RUN_ARGS[@]}" "${IMAGE_NAME}" >/dev/null
 
-echo "FinAlly is running at ${URL}"
+echo "Ticker is running at ${URL}"
 
 # Open the browser on macOS if available.
 if command -v open >/dev/null 2>&1; then

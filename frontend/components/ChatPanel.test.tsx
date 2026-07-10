@@ -18,7 +18,7 @@ beforeEach(() => {
 describe('ChatPanel', () => {
   it('shows the empty-state prompt when there are no messages', () => {
     render(<ChatPanel open onClose={() => {}} />);
-    expect(screen.getByText(/Ask FinAlly to analyze or trade/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ask Ticker to analyze or trade/i)).toBeInTheDocument();
   });
 
   it('renders user and assistant messages', () => {
@@ -79,7 +79,7 @@ describe('ChatPanel', () => {
   it('sends a message on submit and clears the input', async () => {
     const user = userEvent.setup();
     render(<ChatPanel open onClose={() => {}} />);
-    const input = screen.getByLabelText('Message FinAlly') as HTMLTextAreaElement;
+    const input = screen.getByLabelText('Message Ticker') as HTMLTextAreaElement;
     await user.type(input, 'buy 3 AAPL');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(mockStore.current.sendChat).toHaveBeenCalledWith('buy 3 AAPL');

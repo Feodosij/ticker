@@ -34,14 +34,14 @@ async def test_structured_parsing_and_message(client, monkeypatch):
     monkeypatch.setattr(
         llm.litellm,
         "completion",
-        _fake_completion(ChatLLMResponse(message="Hello from FinAlly")),
+        _fake_completion(ChatLLMResponse(message="Hello from Ticker")),
     )
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
 
     resp = await client.post("/api/chat", json={"message": "hi"})
     assert resp.status_code == 200
     data = resp.json()
-    assert data["message"] == "Hello from FinAlly"
+    assert data["message"] == "Hello from Ticker"
     assert data["trades"] == []
     assert data["watchlist_changes"] == []
 
@@ -212,7 +212,7 @@ async def test_mock_mode_other(client, monkeypatch):
     data = resp.json()
     assert data["trades"] == []
     assert data["watchlist_changes"] == []
-    assert "FinAlly" in data["message"]
+    assert "Ticker" in data["message"]
 
 
 @pytest.mark.asyncio

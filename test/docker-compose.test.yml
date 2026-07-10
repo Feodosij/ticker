@@ -10,7 +10,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: finally:latest
+    image: ticker:latest
     environment:
       LLM_MOCK: "true"
       MASSIVE_API_KEY: ""
@@ -22,7 +22,7 @@ services:
         aliases:
           # Dotted host: Chromium force-upgrades single-label hosts ("app") to
           # HTTPS with no fallback (ERR_SSL_PROTOCOL_ERROR), so tests target this.
-          - app.finally.test
+          - app.ticker.test
     # No volume mount: each run starts from a freshly-seeded database so the
     # "fresh start" scenario ($10k cash, default watchlist) is deterministic.
 
@@ -31,7 +31,7 @@ services:
     depends_on:
       - app
     environment:
-      BASE_URL: "http://app.finally.test:8000"
+      BASE_URL: "http://app.ticker.test:8000"
       CI: "true"
       # Browsers are baked into the image; don't re-download them on npm install.
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"

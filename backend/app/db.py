@@ -1,4 +1,4 @@
-"""SQLite data-access layer for FinAlly.
+"""SQLite data-access layer for Ticker.
 
 A thin repository over stdlib `sqlite3`. The database is lazily created and
 seeded on first use. All access goes through a single process-wide connection

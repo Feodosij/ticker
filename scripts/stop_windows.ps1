@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Stop and remove the FinAlly container on Windows.
+    Stop and remove the Ticker container on Windows.
 .DESCRIPTION
     Idempotent: does nothing (successfully) if the container isn't there.
     The ./db data volume is left untouched — your portfolio persists.
@@ -8,7 +8,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$ContainerName = "finally"
+$ContainerName = "ticker"
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     Write-Error "docker is not installed or not on PATH."
